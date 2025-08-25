@@ -1,7 +1,7 @@
 # %% [markdown]
 # ## Load Word Lists
 from pathlib import Path
-
+from typing import List, Tuple, Dict, Optional, Any
 # %%
 def load_words_from_file(path: str):
     with open(path, "r") as f:
