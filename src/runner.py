@@ -3,19 +3,11 @@ import yaml
 
 from .eval import run_benchmark, summarize_with_cis
 from .config import set_config
-from .solvers import RandomSolver, HeuristicSolver, EntropySolver, MCTSSolver
-
-
-SOLVER_REGISTRY = {
-    "random": RandomSolver,
-    "heuristic": HeuristicSolver,
-    "entropy": EntropySolver,
-    "mcts": MCTSSolver,
-}
+from .solvers import SOLVER_REGISTRY, DEFAULT_SOLVERS
 
 
 def build_solvers_from_config(cfg: dict):
-    names = cfg.get("solvers") or list(SOLVER_REGISTRY.keys())
+    names = cfg.get("solvers") or DEFAULT_SOLVERS
     solvers = []
     for name in names:
         cls = SOLVER_REGISTRY.get(name.lower())

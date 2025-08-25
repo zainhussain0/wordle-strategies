@@ -7,13 +7,13 @@ pip install -r requirements.txt
 ```
 
 ### Profiles
-- **Smoke** (seconds): sanity-check the pipeline  
+- **Smoke** (seconds): sanity-check the pipeline
   `python -m src.cli run --profile smoke`
 
 - **Fast** (dev benchmark; with 95% CIs + plots):  
   `python -m src.cli run --profile fast`
 
-- **Full** (full 2309-word sweep; with 95% CIs + plots):  
+- **Full** (full 2309-word sweep; with 95% CIs + plots):
   `python -m src.cli run --profile full`
 
 ### Outputs
@@ -24,4 +24,12 @@ pip install -r requirements.txt
 
 `results/plots/`
 - `solver_bars_<mode>.png` (uses CIs if available)
+
+## Solvers
+
+Each Wordle strategy is implemented as a separate module under `src/solvers`.
+Solvers register themselves via a lightweight registry, so benchmark runs can
+select strategies by name in the config files.  New strategies can be added by
+creating a module with a `Solver` subclass and decorating it with
+`@register_solver`.
 
