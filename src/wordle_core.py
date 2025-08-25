@@ -1,5 +1,8 @@
 # %% [markdown]
 # ## Load Word Lists
+import collections
+import math
+import random
 from pathlib import Path
 from typing import List, Tuple, Dict, Optional, Any
 # %%
@@ -65,6 +68,7 @@ def cached_pattern(g: str, c: str) -> Pattern:
 #entropy helpers
 
 def partitions_for_guess(guess: str, candidates: List[str]) -> Dict[Pattern, int]:
+    """Count outcome pattern frequencies for a guess over candidates."""
     buckets = collections.Counter(cached_pattern(guess, c) for c in candidates)
     return buckets
 
@@ -85,8 +89,8 @@ def next_candidates(cands: List[str], guess: str, patt: Pattern) -> List[str]:
     return [w for w in cands if consistent(w, guess, patt)]
 
 def rollout_policy(cands: List[str]) -> str:
-    # quick policy: heuristic among candidates
-    return max(cands, key=heuristic_score) if cands else ""
+    """Simple policy used during MCTS rollouts."""
+    return random.choice(cands) if cands else ""
 
 def simulate_to_terminal(cands: List[str], max_guesses_left: int = 6) -> Tuple[bool, int]:
     """Return (success, guesses_used) from this state using a fast policy."""

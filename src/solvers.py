@@ -3,11 +3,10 @@ from dataclasses import dataclass, field
 from typing import List, Tuple, Dict, Optional
 from .wordle_core import (
     Pattern, feedback_pattern, cached_pattern, next_candidates,
-    entropy_of_guess, partitions_for_guess,
+    entropy_of_guess, partitions_for_guess, simulate_to_terminal,
     target_words, valid_words, all_valid_words
 )
 from .config import get_config
-CONFIG = get_config()
 
 
 
@@ -88,6 +87,7 @@ class HeuristicSolver(Solver):
     name = "Heuristic"
     def guess(self, candidates, valid, history, hard_mode):
         self.reset_diag()
+        cfg = get_config()
         pool = candidates
         # rank pool by heuristic_score
         scored = [(w, heuristic_score(w)) for w in pool]
@@ -97,7 +97,7 @@ class HeuristicSolver(Solver):
             "score_name": "heuristic_score",
             "score_value": float(sc),
             "is_probe": (g not in candidates),
-            "topk": scored[:CONFIG["analysis"]["topk"]],
+            "topk": scored[:cfg["analysis"]["topk"]],
             "extras": {}
         })
         return g
@@ -107,20 +107,13 @@ class EntropySolver(Solver):
     name = "Entropy"
     def guess(self, candidates, valid, history, hard_mode):
         self.reset_diag()
-        pool = candidates if (hard_mode or not CONFIG["allow_probes"]) else all_valid_words
+        cfg = get_config()
+        pool = candidates if (hard_mode or not cfg["allow_probes"]) else all_valid_words
 
         # optional prune by heuristic for speed
         K_prune = 2000 if len(pool) > 3000 else len(pool)
         if K_prune < len(pool):
             pool = sorted(pool, key=heuristic_score, reverse=True)[:K_prune]
-
-        if CONFIG["analysis"]["log_turns"] and turn == 1:
-          # log the top-K by entropy
-          ranked = sorted(scores.items(), key=lambda kv: -kv[1])[:CONFIG["analysis"]["topk"]]
-          with open(outdir / f"{self.name}_entropy_topk.csv", "a") as f:
-              writer = csv.writer(f)
-              writer.writerow([game_id, turn] + [w for w, _ in ranked])
-
 
         scored = []
         for g in pool:
@@ -137,7 +130,7 @@ class EntropySolver(Solver):
             "score_name": "entropy_bits",
             "score_value": float(best_H),
             "is_probe": (best_g not in candidates),
-            "topk": [(w, float(h)) for w,h in scored[:CONFIG["analysis"]["topk"]]],
+            "topk": [(w, float(h)) for w, h in scored[:cfg["analysis"]["topk"]]],
             "extras": {"bucket_sizes": bucket_sizes, "pool_size": len(pool)}
         })
         return best_g
@@ -164,10 +157,11 @@ class MCTSSolver(Solver):
     name = "MCTS"
     def guess(self, candidates, valid, history, hard_mode):
         self.reset_diag()
+        cfg = get_config()
         root = Node(tuple(sorted(candidates)))
-        c_ucb = CONFIG["mcts"]["ucb_c"]
-        R = CONFIG["mcts"]["rollouts_per_move"]
-        pool = candidates if (hard_mode or not CONFIG["allow_probes"]) else all_valid_words
+        c_ucb = cfg["mcts"]["ucb_c"]
+        R = cfg["mcts"]["rollouts_per_move"]
+        pool = candidates if (hard_mode or not cfg["allow_probes"]) else all_valid_words
 
         for _ in range(R):
             node = root
@@ -226,11 +220,11 @@ class MCTSSolver(Solver):
             "score_name": "ucb_Q",
             "score_value": float(child_stats[0][2]),  # Q of chosen
             "is_probe": (best_g not in candidates),
-            "topk": [(g, float(Q)) for (g, visits, Q, u) in child_stats[:CONFIG["analysis"]["topk"]]],
+            "topk": [(g, float(Q)) for (g, visits, Q, u) in child_stats[:cfg["analysis"]["topk"]]],
             "extras": {
                 "rollouts": R,
-                "topk_visits": [(g, int(v)) for (g, v, Q, u) in child_stats[:CONFIG["analysis"]["topk"]]],
-                "topk_ucb": [(g, float(u)) for (g, v, Q, u) in child_stats[:CONFIG["analysis"]["topk"]]]
+                "topk_visits": [(g, int(v)) for (g, v, Q, u) in child_stats[:cfg["analysis"]["topk"]]],
+                "topk_ucb": [(g, float(u)) for (g, v, Q, u) in child_stats[:cfg["analysis"]["topk"]]]
             }
         })
         return best_g

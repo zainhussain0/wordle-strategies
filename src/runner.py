@@ -7,6 +7,14 @@ from .config import set_config, config_paths
 from .eval import run_benchmark, summarize_with_cis
 from .solvers import RandomSolver, HeuristicSolver, EntropySolver, MCTSSolver
 
+# Simple registry to allow selecting a subset of solvers from config
+SOLVER_REGISTRY = {
+    "random": RandomSolver,
+    "heuristic": HeuristicSolver,
+    "entropy": EntropySolver,
+    "mcts": MCTSSolver,
+}
+
 def load_profile_yaml(profile: str) -> dict:
     repo = Path(__file__).resolve().parents[1]
     yml = repo / "config" / f"{profile}.yaml"
@@ -20,8 +28,15 @@ def run_profile(profile: str = "fast_dev"):
     cfg = load_profile_yaml(profile)
     CONFIG = set_config(cfg)
 
-    # 2) instantiate solvers (names are fixed here; YAML controls budgets)
-    solvers = [RandomSolver(), HeuristicSolver(), EntropySolver(), MCTSSolver()]
+    # 2) instantiate solvers (names may be overridden via YAML)
+    solver_names = cfg.get("solvers")
+    if solver_names:
+        try:
+            solvers = [SOLVER_REGISTRY[name.lower()]() for name in solver_names]
+        except KeyError as e:
+            raise ValueError(f"Unknown solver name: {e.args[0]}")
+    else:
+        solvers = [cls() for cls in SOLVER_REGISTRY.values()]
 
     # 3) run benchmark
     rows, metrics = run_benchmark(solvers, mode=CONFIG["mode"])
