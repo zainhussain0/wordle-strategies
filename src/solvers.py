@@ -73,8 +73,16 @@ letter_counts = Counter("".join(target_words))
 total_letters = sum(letter_counts.values())
 letter_freq = {ch: letter_counts[ch]/total_letters for ch in 'abcdefghijklmnopqrstuvwxyz'}
 
+pos_counts = [Counter(word[i] for word in target_words) for i in range(5)]
+pos_freq = [
+    {ch: pos_counts[i][ch] / len(target_words) for ch in 'abcdefghijklmnopqrstuvwxyz'}
+    for i in range(5)
+]
+
 def heuristic_score(word: str, use_positional: bool=False) -> float:
     score = sum(letter_freq.get(ch, 0) for ch in set(word))  # distinct letters to encourage coverage
+    if use_positional:
+        score += sum(pos_freq[i].get(ch, 0) for i, ch in enumerate(word))
     # vowel coverage bonus
     vowels = set(word) & set("aeiou")
     score += 0.05*len(vowels)
@@ -254,3 +262,22 @@ class RLSolver(Solver):
         # greedy
         qvals = self.Q.get(state, {})
         return max(acts, key=lambda a: qvals.get(a, 0.0))
+
+class PositionalHeuristicSolver(Solver):
+    name = "Positional"
+
+    def guess(self, candidates, valid, history, hard_mode):
+        self.reset_diag()
+        cfg = get_config()
+        pool = candidates
+        scored = [(w, heuristic_score(w, use_positional=True)) for w in pool]
+        scored.sort(key=lambda x: x[1], reverse=True)
+        g, sc = scored[0]
+        self._diag.update({
+            "score_name": "heuristic_score",
+            "score_value": float(sc),
+            "is_probe": (g not in candidates),
+            "topk": scored[:cfg["analysis"]["topk"]],
+            "extras": {},
+        })
+        return g
