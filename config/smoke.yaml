@@ -1,8 +1,10 @@
 mode: fast
-fast_n_targets: 10
+# tiny subset for quick smoke test
+fast_n_targets: 5
 fast_repeats: 1
 full_repeats: 1
 hard_mode: false
 allow_probes: false
+solvers: [random, heuristic]
 mcts: { rollouts_per_move: 5, ucb_c: 1.4 }
 analysis: { log_turns: false, topk: 3 }
