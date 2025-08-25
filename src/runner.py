@@ -1,13 +1,11 @@
-# src/runner.py
-import json
 from pathlib import Path
 import yaml
 
-from .config import set_config, config_paths
 from .eval import run_benchmark, summarize_with_cis
+from .config import set_config
 from .solvers import RandomSolver, HeuristicSolver, EntropySolver, MCTSSolver
 
-# Simple registry to allow selecting a subset of solvers from config
+
 SOLVER_REGISTRY = {
     "random": RandomSolver,
     "heuristic": HeuristicSolver,
@@ -15,38 +13,59 @@ SOLVER_REGISTRY = {
     "mcts": MCTSSolver,
 }
 
-def load_profile_yaml(profile: str) -> dict:
-    repo = Path(__file__).resolve().parents[1]
-    yml = repo / "config" / f"{profile}.yaml"
-    if not yml.exists():
-        raise FileNotFoundError(f"Config profile not found: {yml}")
-    with yml.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
 
-def run_profile(profile: str = "fast_dev"):
-    # 1) load YAML and set CONFIG
-    cfg = load_profile_yaml(profile)
-    CONFIG = set_config(cfg)
+def build_solvers_from_config(cfg: dict):
+    names = cfg.get("solvers") or list(SOLVER_REGISTRY.keys())
+    solvers = []
+    for name in names:
+        cls = SOLVER_REGISTRY.get(name.lower())
+        if cls is None:
+            raise ValueError(f"Unknown solver name: {name}")
+        solvers.append(cls())
+    return solvers
 
-    # 2) instantiate solvers (names may be overridden via YAML)
-    solver_names = cfg.get("solvers")
-    if solver_names:
-        try:
-            solvers = [SOLVER_REGISTRY[name.lower()]() for name in solver_names]
-        except KeyError as e:
-            raise ValueError(f"Unknown solver name: {e.args[0]}")
-    else:
-        solvers = [cls() for cls in SOLVER_REGISTRY.values()]
 
-    # 3) run benchmark
-    rows, metrics = run_benchmark(solvers, mode=CONFIG["mode"])
-    summarize_with_cis(rows)
+def run_profile(profile_name: str):
+    cfg_path = Path("config") / f"{profile_name}.yaml"
+    with open(cfg_path) as f:
+        CONFIG = yaml.safe_load(f) or {}
 
-    # 4) snapshot config for reproducibility
-    paths = config_paths()
-    snap_path = paths["summary"] / f"config_snapshot_{profile}.json"
-    snap = dict(CONFIG)
-    snap["solvers"] = [s.__class__.__name__ for s in solvers]
-    snap_path.write_text(json.dumps(snap, indent=2), encoding="utf-8")
-    print(f"Done. CSVs in {paths['summary']}, plots in {paths['plots']}.")
+    # propagate config for solvers that consult global settings
+    set_config(CONFIG)
+
+    mode = CONFIG.get("mode", profile_name)
+    results_dir = Path(CONFIG.get("results_dir", "results/summary"))
+    results_dir.mkdir(parents=True, exist_ok=True)
+
+    log_turns = bool(CONFIG.get("log_turns", False))
+    write_ci = bool(CONFIG.get("write_ci", profile_name != "smoke"))
+    make_plots = bool(CONFIG.get("make_plots", False))
+
+    n_targets = CONFIG.get("n_targets")
+    repeats = int(CONFIG.get("repeats", 1))
+
+    solvers = build_solvers_from_config(CONFIG)
+
+    rows, meta = run_benchmark(
+        solvers,
+        mode=mode,
+        results_dir=results_dir,
+        log_turns=log_turns,
+        n_targets=n_targets,
+        repeats=repeats,
+    )
+
+    games_csv = Path(meta["games_csv"])
+    metrics_csv = Path(meta["metrics_csv"])
+
+    if write_ci:
+        summarize_with_cis(str(games_csv))
+
+    if make_plots:
+        from .figures import build_all
+
+        build_all(mode=mode, results_dir=str(results_dir))
+
+
+__all__ = ["run_profile"]
 
