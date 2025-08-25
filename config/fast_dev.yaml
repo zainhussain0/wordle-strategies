@@ -1,0 +1,15 @@
+seed: 1337
+mode: fast          # fast|full
+n_workers: 4        # adjust to your CPU
+max_targets: 200    # sampled targets in fast mode
+repeats: 100        # repeats per target for fast ablations
+hard_mode: false
+allow_probe_outside_candidates: true
+answers_path: data/wordle-answers-alphabetical.txt
+guesses_path: data/wordle-allowed-guesses.txt
+solvers:
+  - name: random
+  - name: heuristic
+  - name: entropy
+  - name: mcts
+output_dir: results
