@@ -1,0 +1,13 @@
+seed: 1337
+mode: full          # sweep all targets once
+n_workers: 4
+hard_mode: false
+allow_probe_outside_candidates: true
+answers_path: data/wordle-answers-alphabetical.txt
+guesses_path: data/wordle-allowed-guesses.txt
+solvers:
+  - name: random
+  - name: heuristic
+  - name: entropy
+  - name: mcts
+output_dir: results
