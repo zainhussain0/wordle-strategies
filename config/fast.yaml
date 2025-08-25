@@ -1,0 +1,10 @@
+mode: fast
+n_targets: 200
+repeats: 50
+workers: 1
+solvers: ["random", "heuristic", "entropy"]
+log_turns: false
+write_ci: true
+make_plots: true
+results_dir: results/summary
+

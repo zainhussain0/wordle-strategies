@@ -1,0 +1,10 @@
+mode: full
+n_targets: all
+repeats: 1
+workers: 1
+solvers: ["random", "heuristic", "entropy"]
+log_turns: false
+write_ci: true
+make_plots: true
+results_dir: results/summary
+
