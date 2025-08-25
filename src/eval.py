@@ -5,6 +5,7 @@ import csv
 import random
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 from .wordle_core import (
     cached_pattern,
@@ -128,12 +129,15 @@ def run_benchmark(
 
     rows: list[dict] = []
     gid = 0
-    for solver in solvers:
-        for _ in range(repeats):
-            for target in targets:
-                gid += 1
-                row = play_game(target, solver, game_id=gid)
-                rows.append(row)
+    total_games = len(solvers) * repeats * len(targets)
+    with tqdm(total=total_games, desc="Evaluating", unit="game") as pbar:
+        for solver in solvers:
+            for _ in range(repeats):
+                for target in targets:
+                    gid += 1
+                    row = play_game(target, solver, game_id=gid)
+                    rows.append(row)
+                    pbar.update(1)
 
     games_df = pd.DataFrame(rows)
     games_df.to_csv(GAMES_CSV, index=False, float_format="%.2f")
