@@ -1,22 +1,23 @@
 # src/cli.py
-import argparse
+import argparse, os
 from .runner import run_profile
-from .figures import build_all_figures
 
 def main():
-    p = argparse.ArgumentParser()
-    sub = p.add_subparsers(dest="cmd", required=True)
+    ap = argparse.ArgumentParser()
+    sub = ap.add_subparsers(dest="cmd", required=True)
 
     r = sub.add_parser("run")
-    r.add_argument("--profile", required=True)
+    r.add_argument("--profile", default=os.environ.get("WORDLE_PROFILE", "fast_dev"))
 
-    f = sub.add_parser("figures")
+    sub.add_parser("figures")
 
-    args = p.parse_args()
+    args = ap.parse_args()
     if args.cmd == "run":
         run_profile(args.profile)
-    elif args.cmd == "figures":
-        build_all_figures()
+    else:
+        # figures command
+        from .analysis import make_all_figures
+        make_all_figures()
 
 if __name__ == "__main__":
     main()
