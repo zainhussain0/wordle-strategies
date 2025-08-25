@@ -1,13 +1,13 @@
 seed: 1337
-mode: full          # sweep all targets once
-n_workers: 4
+mode: full
+fast_n_targets: 200          # unused in "full", kept for parity
+fast_repeats: 1              # unused in "full"
+full_repeats: 1
 hard_mode: false
-allow_probe_outside_candidates: true
-answers_path: data/wordle-answers-alphabetical.txt
-guesses_path: data/wordle-allowed-guesses.txt
-solvers:
-  - name: random
-  - name: heuristic
-  - name: entropy
-  - name: mcts
-output_dir: results
+allow_probes: true           # match your dissertation’s main setting
+mcts:
+  rollouts_per_move: 400
+  ucb_c: 1.4
+analysis:
+  log_turns: true            # keep on for richer Results
+  topk: 10
