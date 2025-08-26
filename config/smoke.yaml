@@ -1,10 +1,16 @@
 mode: smoke
-n_targets: 10
+# Quick check across all solvers using a small subset of targets
+n_targets: 20
 repeats: 1
 workers: 1
-solvers: ["random"]
+solvers: ["random", "heuristic", "positional", "entropy", "mcts"]
 log_turns: false
-write_ci: false
-make_plots: false
+allow_probes: false
+mcts:
+  rollouts_per_move: 5
+entropy_max_candidates: 500
+# Produce confidence intervals and figures for basic verification
+write_ci: true
+make_plots: true
 results_dir: results/summary
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+import time
 import yaml
 
 from .eval import run_benchmark, summarize_with_cis
@@ -50,9 +51,12 @@ def run_profile(profile_name: str):
 
     n_targets = CONFIG.get("n_targets")
     repeats = int(CONFIG.get("repeats", 1))
+    allow_probes = bool(CONFIG.get("allow_probes", True))
+    hard_mode = bool(CONFIG.get("hard_mode", False))
 
     solvers = build_solvers_from_config(CONFIG)
 
+    start = time.perf_counter()
     rows, meta = run_benchmark(
         solvers,
         mode=mode,
@@ -60,6 +64,8 @@ def run_profile(profile_name: str):
         log_turns=log_turns,
         n_targets=n_targets,
         repeats=repeats,
+        allow_probes=allow_probes,
+        hard_mode=hard_mode,
     )
 
     games_csv = Path(meta["games_csv"])
@@ -72,6 +78,9 @@ def run_profile(profile_name: str):
         from .figures import build_all
 
         build_all(mode=mode, results_dir=str(results_dir))
+
+    elapsed = time.perf_counter() - start
+    print(f"Completed profile '{profile_name}' in {elapsed:.2f} seconds")
 
 
 __all__ = ["run_profile"]

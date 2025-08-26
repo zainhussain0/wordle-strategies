@@ -1,8 +1,10 @@
 mode: full
+# Exhaustive benchmark over the full target list
 n_targets: all
-repeats: 1
+# More repeats give more stable statistics
+repeats: 10
 workers: 1
-solvers: ["random", "heuristic", "entropy"]
+solvers: ["random", "heuristic", "positional", "entropy", "mcts"]
 log_turns: false
 write_ci: true
 make_plots: true

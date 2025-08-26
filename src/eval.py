@@ -111,6 +111,8 @@ def run_benchmark(
     log_turns: bool = LOG_TURNS,
     n_targets: int | str | None = None,
     repeats: int = 1,
+    allow_probes: bool = True,
+    hard_mode: bool = False,
 ):
     global RESULTS_DIR, GAMES_CSV, METRICS_CSV, TURNLOG_CSV, LOG_TURNS
     RESULTS_DIR = Path(results_dir)
@@ -132,7 +134,13 @@ def run_benchmark(
         for _ in range(repeats):
             for target in targets:
                 gid += 1
-                row = play_game(target, solver, game_id=gid)
+                row = play_game(
+                    target,
+                    solver,
+                    hard_mode=hard_mode,
+                    allow_probes=allow_probes,
+                    game_id=gid,
+                )
                 rows.append(row)
 
     games_df = pd.DataFrame(rows)

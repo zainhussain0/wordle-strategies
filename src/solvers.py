@@ -96,9 +96,9 @@ class EntropySolver(Solver):
     def guess(self, candidates, valid, history, hard_mode):
         cfg = get_config()
         pool = candidates if (hard_mode or not cfg["allow_probes"]) else all_valid_words
-        K_prune = 2000 if len(pool) > 3000 else len(pool)
-        if K_prune < len(pool):
-            pool = sorted(pool, key=heuristic_score, reverse=True)[:K_prune]
+        max_cand = int(cfg.get("entropy_max_candidates", 2000))
+        if len(pool) > max_cand:
+            pool = sorted(pool, key=heuristic_score, reverse=True)[:max_cand]
         scored = [(g, entropy_of_guess(g, candidates)) for g in pool]
         scored.sort(key=lambda x: x[1], reverse=True)
         best_g, _ = scored[0]

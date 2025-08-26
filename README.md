@@ -14,14 +14,14 @@ python -m src.gui
 ```
 
 ### Profiles
-- **Smoke** (seconds): sanity-check the pipeline  
+- **Smoke**: quick check across all solvers on a small random target subset. Heavy solvers use a
+  reduced search (fewer MCTS rollouts and capped entropy candidates) to finish in seconds.
   `python -m src.cli run --profile smoke`
 
-- **Fast** (dev benchmark; with 95% CIs + plots):  
-  `python -m src.cli run --profile fast`
-
-- **Full** (full 2309-word sweep; with 95% CIs + plots):
+- **Full**: exhaustive 2309-word sweep using all solvers with repeated runs for accuracy
   `python -m src.cli run --profile full`
+
+After each profile completes, the CLI reports the total runtime.
 
 ### Outputs
 `results/summary/`
@@ -36,7 +36,7 @@ python -m src.gui
 After running a benchmark you can compare solvers using paired tests:
 
 ```bash
-python -m src.stats results/summary/games_fast.csv --metric guesses --test wilcoxon
+python -m src.stats results/summary/games_full.csv --metric guesses --test wilcoxon
 ```
 This writes a table of pairwise test statistics and p-values comparing solver performance.
 

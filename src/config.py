@@ -17,6 +17,7 @@ CONFIG_DEFAULTS = {
     "full_repeats": 1,
     "hard_mode": False,
     "allow_probes": True,
+    "entropy_max_candidates": 2000,
     "mcts": {"rollouts_per_move": 100, "ucb_c": 1.4},
     "analysis": {"log_turns": True, "topk": 10},
 }
