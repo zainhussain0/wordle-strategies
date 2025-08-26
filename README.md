@@ -6,6 +6,13 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+### GUI
+Run a simple desktop interface for interactive solving:
+
+```bash
+python -m src.gui
+```
+
 ### Profiles
 - **Smoke** (seconds): sanity-check the pipeline  
   `python -m src.cli run --profile smoke`

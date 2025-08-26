@@ -3,12 +3,19 @@ import yaml
 
 from .eval import run_benchmark, summarize_with_cis
 from .config import set_config
-from .solvers import RandomSolver, HeuristicSolver, EntropySolver, MCTSSolver
+from .solvers import (
+    RandomSolver,
+    HeuristicSolver,
+    EntropySolver,
+    MCTSSolver,
+    PositionalHeuristicSolver,
+)
 
 
 SOLVER_REGISTRY = {
     "random": RandomSolver,
     "heuristic": HeuristicSolver,
+    "positional": PositionalHeuristicSolver,
     "entropy": EntropySolver,
     "mcts": MCTSSolver,
 }
