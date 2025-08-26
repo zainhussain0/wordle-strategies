@@ -33,10 +33,12 @@ def build_solvers_from_config(cfg: dict):
     return solvers
 
 
-def run_profile(profile_name: str):
+def run_profile(profile_name: str, solvers: list[str] | None = None):
     cfg_path = Path("config") / f"{profile_name}.yaml"
     with open(cfg_path) as f:
         CONFIG = yaml.safe_load(f) or {}
+    if solvers is not None:
+        CONFIG["solvers"] = solvers
 
     # propagate config for solvers that consult global settings
     set_config(CONFIG)
@@ -54,11 +56,11 @@ def run_profile(profile_name: str):
     allow_probes = bool(CONFIG.get("allow_probes", True))
     hard_mode = bool(CONFIG.get("hard_mode", False))
 
-    solvers = build_solvers_from_config(CONFIG)
+    solver_objs = build_solvers_from_config(CONFIG)
 
     start = time.perf_counter()
     rows, meta = run_benchmark(
-        solvers,
+        solver_objs,
         mode=mode,
         results_dir=results_dir,
         log_turns=log_turns,
@@ -79,9 +81,12 @@ def run_profile(profile_name: str):
 
         build_all(mode=mode, results_dir=str(results_dir))
 
+
     elapsed = time.perf_counter() - start
     print(f"Completed profile '{profile_name}' in {elapsed:.2f} seconds")
 
 
-__all__ = ["run_profile"]
+
+
+__all__ = ["run_profile", "SOLVER_REGISTRY", "build_solvers_from_config"]
 

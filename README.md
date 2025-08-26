@@ -7,7 +7,7 @@ pip install -r requirements.txt
 ```
 
 ### GUI
-Run a simple desktop interface for interactive solving:
+Run a simple desktop interface to benchmark selected solvers:
 
 ```bash
 python -m src.gui
